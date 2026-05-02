@@ -1,5 +1,17 @@
 const { useRef, useState, useEffect, useLayoutEffect } = React;
 
+/* ---------------- useViewport: width-driven breakpoints ---------------- */
+const useViewport = () => {
+  const get = () => (typeof window === "undefined" ? 1440 : window.innerWidth);
+  const [w, setW] = useState(get);
+  useEffect(() => {
+    const on = () => setW(get());
+    window.addEventListener("resize", on, { passive: true });
+    return () => window.removeEventListener("resize", on);
+  }, []);
+  return { w, isMobile: w < 768, isTablet: w < 1024 };
+};
+
 /* ---------------- motion shim: Web Animations API ---------------- */
 const makeMotion = (Tag) => React.forwardRef((props, fwdRef) => {
   const {
@@ -330,9 +342,17 @@ const MainframeHero = () => {
   const [hoveredNav, setHoveredNav] = useState(null);
   const [hoveredCTA, setHoveredCTA] = useState(false);
   const [scale, setScale] = useState(1);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { isMobile, isTablet } = useViewport();
 
   return (
-    <section style={{ height: "100vh", width: "100%", padding: "20px", background: "transparent", position: "relative" }}>
+    <section style={{
+      height: "100dvh",
+      width: "100%",
+      padding: isMobile ? "12px" : "20px",
+      background: "transparent",
+      position: "relative"
+    }}>
       <div style={{
         position: "relative",
         height: "100%",
@@ -418,36 +438,49 @@ const MainframeHero = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "22px 32px"
+          gap: isMobile ? 12 : 24,
+          padding: isMobile ? "14px 16px" : "22px 32px"
         }}>
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            style={{ display: "flex", alignItems: "center", gap: 32 }}>
-            
-            <MFDLogo size={168} />
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <span style={{
-                fontSize: 32,
-                fontWeight: 600,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                color: "#E5E7EB",
-                lineHeight: 1
-              }}>Mainframe Digital</span>
-              <span style={{
-                fontSize: 20,
-                fontWeight: 400,
-                letterSpacing: "0.28em",
-                textTransform: "uppercase",
-                color: "rgba(229,231,235,0.55)",
-                lineHeight: 1
-              }}>Design, Automate, Grow</span>
-            </div>
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: isMobile ? 12 : isTablet ? 18 : 32,
+              minWidth: 0
+            }}>
+
+            <MFDLogo size={isMobile ? 44 : isTablet ? 56 : 168} />
+            {!isTablet && (
+              <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 4 : 8, minWidth: 0 }}>
+                <span style={{
+                  fontSize: isMobile ? 14 : 32,
+                  fontWeight: 600,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: "#E5E7EB",
+                  lineHeight: 1,
+                  whiteSpace: "nowrap"
+                }}>Mainframe Digital</span>
+                {!isMobile && (
+                  <span style={{
+                    fontSize: 20,
+                    fontWeight: 400,
+                    letterSpacing: "0.28em",
+                    textTransform: "uppercase",
+                    color: "rgba(229,231,235,0.55)",
+                    lineHeight: 1,
+                    whiteSpace: "nowrap"
+                  }}>Design, Automate, Grow</span>
+                )}
+              </div>
+            )}
           </motion.div>
 
-          {/* Nav pill — liquid glass */}
+          {/* Nav pill — liquid glass (desktop / tablet only) */}
+          {!isMobile && (
           <motion.nav
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -456,14 +489,14 @@ const MainframeHero = () => {
               position: "relative",
               display: "flex",
               alignItems: "center",
-              gap: 44,
+              gap: isTablet ? 22 : 44,
               background: "linear-gradient(135deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.14) 100%)",
               backdropFilter: "blur(18px) saturate(180%)",
               WebkitBackdropFilter: "blur(18px) saturate(180%)",
               border: "1px solid rgba(255,255,255,0.28)",
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.28)",
               borderRadius: 999,
-              padding: "18px 38px",
+              padding: isTablet ? "12px 22px" : "18px 38px",
               overflow: "hidden"
             }}>
 
@@ -486,18 +519,21 @@ const MainframeHero = () => {
               style={{
                 position: "relative",
                 zIndex: 1,
-                fontSize: 18,
+                fontSize: isTablet ? 14 : 18,
                 fontWeight: 500,
                 letterSpacing: "0.02em",
                 color: hoveredNav === item ? "#FFFFFF" : "rgba(229,231,235,0.78)",
-                transition: "color 0.2s ease"
+                transition: "color 0.2s ease",
+                whiteSpace: "nowrap"
               }}>
 
                 {item}
               </a>
             )}
           </motion.nav>
+          )}
 
+          {!isTablet && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -510,9 +546,10 @@ const MainframeHero = () => {
               fontWeight: 400,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              color: "rgba(229,231,235,0.65)"
+              color: "rgba(229,231,235,0.65)",
+              whiteSpace: "nowrap"
             }}>
-            
+
             <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#7CFFB2", boxShadow: "0 0 8px #7CFFB2" }} />
               Booking · Q3 ’26
@@ -520,9 +557,113 @@ const MainframeHero = () => {
             <span style={{ width: 1, height: 14, background: "rgba(229,231,235,0.2)" }} />
             <span>Auckland · NZ</span>
           </motion.div>
+          )}
+
+          {/* Hamburger — mobile only */}
+          {isMobile && (
+            <motion.button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.35 }}
+              style={{
+                position: "relative",
+                width: 48, height: 48,
+                borderRadius: "50%",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "linear-gradient(135deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.14) 100%)",
+                backdropFilter: "blur(18px) saturate(180%)",
+                WebkitBackdropFilter: "blur(18px) saturate(180%)",
+                border: "1px solid rgba(255,255,255,0.28)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 4px 16px rgba(0,0,0,0.28)",
+                cursor: "pointer",
+                flexShrink: 0
+              }}>
+              <span aria-hidden="true" style={{
+                position: "relative",
+                width: 18, height: 12,
+                display: "inline-block"
+              }}>
+                <span style={{
+                  position: "absolute", left: 0, right: 0, top: menuOpen ? 5 : 0,
+                  height: 1.5, background: "#E5E7EB", borderRadius: 1,
+                  transform: menuOpen ? "rotate(45deg)" : "none",
+                  transition: "transform 0.25s ease, top 0.25s ease"
+                }} />
+                <span style={{
+                  position: "absolute", left: 0, right: 0, top: 5,
+                  height: 1.5, background: "#E5E7EB", borderRadius: 1,
+                  opacity: menuOpen ? 0 : 1,
+                  transition: "opacity 0.2s ease"
+                }} />
+                <span style={{
+                  position: "absolute", left: 0, right: 0, top: menuOpen ? 5 : 10,
+                  height: 1.5, background: "#E5E7EB", borderRadius: 1,
+                  transform: menuOpen ? "rotate(-45deg)" : "none",
+                  transition: "transform 0.25s ease, top 0.25s ease"
+                }} />
+              </span>
+            </motion.button>
+          )}
         </div>
 
-        {/* Side rails — meta */}
+        {/* Mobile nav sheet */}
+        {isMobile && menuOpen && (
+          <div
+            onClick={() => setMenuOpen(false)}
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 19,
+              background: "rgba(13,17,23,0.78)",
+              backdropFilter: "blur(18px) saturate(160%)",
+              WebkitBackdropFilter: "blur(18px) saturate(160%)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "stretch",
+              justifyContent: "center",
+              padding: "100px 28px 32px"
+            }}>
+            <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {navItems.map((item) => (
+                <a
+                  key={item}
+                  href="#"
+                  style={{
+                    fontSize: 28,
+                    fontWeight: 500,
+                    letterSpacing: "-0.01em",
+                    color: "#E5E7EB",
+                    padding: "14px 0",
+                    borderBottom: "1px solid rgba(229,231,235,0.12)"
+                  }}>{item}</a>
+              ))}
+            </nav>
+            <div style={{
+              marginTop: 32,
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              fontSize: 11,
+              fontWeight: 400,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "rgba(229,231,235,0.65)"
+            }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#7CFFB2", boxShadow: "0 0 8px #7CFFB2" }} />
+                Booking · Q3 ’26
+              </span>
+              <span>Auckland · NZ</span>
+            </div>
+          </div>
+        )}
+
+        {/* Side rails — meta (hidden on mobile per design system) */}
+        {!isTablet && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -540,9 +681,10 @@ const MainframeHero = () => {
             color: "rgba(229,231,235,0.45)",
             whiteSpace: "nowrap"
           }}>
-          
+
           Scroll · 36.8485°S 174.7633°E
         </motion.div>
+        )}
 
         {/* Floating tagline pill — top center under nav, hidden when nav too crowded */}
         <motion.div
@@ -578,13 +720,13 @@ const MainframeHero = () => {
           position: "absolute",
           bottom: 0,
           left: 0, right: 0,
-          padding: "0 80px 48px"
+          padding: isMobile ? "0 18px 24px" : isTablet ? "0 36px 36px" : "0 80px 48px"
         }}>
           <div style={{
             display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.05fr)",
+            gridTemplateColumns: isMobile ? "minmax(0, 1fr)" : isTablet ? "minmax(0, 1fr)" : "minmax(0, 1fr) minmax(0, 1.05fr)",
             alignItems: "end",
-            gap: 56
+            gap: isMobile ? 24 : isTablet ? 32 : 56
           }}>
 
             {/* Left — giant wordmark */}
@@ -604,7 +746,7 @@ const MainframeHero = () => {
                 fontFamily: "'Poppins', sans-serif",
                 fontWeight: 300,
                 fontStyle: "italic",
-                fontSize: "clamp(70px, 11vw, 200px)",
+                fontSize: isMobile ? "clamp(48px, 16vw, 96px)" : "clamp(70px, 11vw, 200px)",
                 lineHeight: 0.85,
                 letterSpacing: "-0.05em",
                 color: "rgba(229,231,235,0.55)",
@@ -627,12 +769,12 @@ const MainframeHero = () => {
             {/* Right — copy + CTA */}
             <div style={{
               position: "relative",
-              maxWidth: 600,
+              maxWidth: isMobile ? "100%" : isTablet ? "100%" : 600,
               minWidth: 0,
-              justifySelf: "end",
+              justifySelf: isMobile || isTablet ? "stretch" : "end",
               width: "100%",
               border: "1px solid rgba(229,231,235,0.22)",
-              padding: "38px 42px"
+              padding: isMobile ? "22px 20px" : isTablet ? "30px 32px" : "38px 42px"
             }}>
               {/* Dot pattern background */}
               <DotPattern width={6} height={6} cr={0.6} color="rgba(229,231,235,0.14)" />
@@ -658,24 +800,24 @@ const MainframeHero = () => {
                 zIndex: 1,
                 display: "flex",
                 flexDirection: "column",
-                gap: 32
+                gap: isMobile ? 20 : 32
               }}>
               <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
                   style={{
-                    fontSize: 16,
+                    fontSize: isMobile ? 11 : isTablet ? 13 : 16,
                     fontWeight: 600,
                     letterSpacing: "0.34em",
                     textTransform: "uppercase",
                     color: "rgba(229,231,235,0.92)",
                     display: "flex",
                     alignItems: "center",
-                    gap: 18
+                    gap: isMobile ? 12 : 18
                   }}>
-                
-                <span style={{ width: 64, height: 1, background: "rgba(229,231,235,0.55)" }} />
+
+                <span style={{ width: isMobile ? 36 : 64, height: 1, background: "rgba(229,231,235,0.55)" }} />
                 Tomorrow's systems, today
               </motion.div>
 
@@ -684,7 +826,7 @@ const MainframeHero = () => {
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
                   style={{
-                    fontSize: 38,
+                    fontSize: isMobile ? 20 : isTablet ? 28 : 38,
                     lineHeight: 1.22,
                     fontWeight: 300,
                     color: "rgba(229,231,235,0.95)",
@@ -700,8 +842,13 @@ const MainframeHero = () => {
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                  style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                
+                  style={{
+                    display: "flex",
+                    flexDirection: isMobile ? "column" : "row",
+                    alignItems: isMobile ? "flex-start" : "center",
+                    gap: isMobile ? 18 : 16
+                  }}>
+
                 <button
                     onMouseEnter={() => setHoveredCTA(true)}
                     onMouseLeave={() => setHoveredCTA(false)}
@@ -719,17 +866,18 @@ const MainframeHero = () => {
                       "inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05)" :
                       "inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.08), 0 4px 24px rgba(0,0,0,0.25)",
                       color: "#E5E7EB",
-                      paddingLeft: 38,
-                      paddingRight: 10,
-                      paddingTop: 10,
-                      paddingBottom: 10,
+                      paddingLeft: isMobile ? 26 : 38,
+                      paddingRight: isMobile ? 8 : 10,
+                      paddingTop: isMobile ? 8 : 10,
+                      paddingBottom: isMobile ? 8 : 10,
                       borderRadius: 999,
-                      fontSize: 22,
+                      fontSize: isMobile ? 17 : 22,
                       fontWeight: 500,
                       letterSpacing: "-0.015em",
                       transition: "gap 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease",
                       transform: hoveredCTA ? "translateY(-2px)" : "translateY(0)",
-                      overflow: "hidden"
+                      overflow: "hidden",
+                      cursor: "pointer"
                     }}>
                   {/* Glass highlight sheen */}
                   <span style={{
@@ -747,7 +895,7 @@ const MainframeHero = () => {
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      width: 62, height: 62,
+                      width: isMobile ? 46 : 62, height: isMobile ? 46 : 62,
                       borderRadius: "50%",
                       background: "linear-gradient(135deg, rgba(13,17,23,0.95) 0%, rgba(28,33,43,0.95) 100%)",
                       border: "1px solid rgba(255,255,255,0.18)",
@@ -755,12 +903,12 @@ const MainframeHero = () => {
                       transition: "transform 0.3s ease",
                       transform: hoveredCTA ? "scale(1.06) rotate(-12deg)" : "scale(1)"
                     }}>
-                    <ArrowRight size={24} color="#E5E7EB" />
+                    <ArrowRight size={isMobile ? 20 : 24} color="#E5E7EB" />
                   </span>
                 </button>
 
                 <a href="#" style={{
-                    fontSize: 18,
+                    fontSize: isMobile ? 15 : 18,
                     fontWeight: 400,
                     color: "rgba(229,231,235,0.82)",
                     borderBottom: "1px solid rgba(229,231,235,0.4)",
@@ -777,28 +925,33 @@ const MainframeHero = () => {
                   transition={{ duration: 0.8, delay: 0.85, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(3, 1fr)",
-                    gap: 16,
+                    gridTemplateColumns: isMobile ? "minmax(0, 1fr)" : "repeat(3, 1fr)",
+                    gap: isMobile ? 14 : 16,
                     marginTop: 4,
-                    paddingTop: 18,
+                    paddingTop: isMobile ? 14 : 18,
                     borderTop: "1px solid rgba(229,231,235,0.12)"
                   }}>
-                
+
                 {[
                   { k: "Sites", v: "Build · Ship · Scale" },
                   { k: "Apps", v: "Custom web platforms" },
                   { k: "AI Ops", v: "Sales · Comms · Leads" }].
                   map((s, i) =>
-                  <div key={i}>
+                  <div key={i} style={isMobile ? {
+                    display: "grid",
+                    gridTemplateColumns: "82px 1fr",
+                    alignItems: "baseline",
+                    gap: 12
+                  } : {}}>
                     <div style={{
-                      fontSize: 12,
+                      fontSize: isMobile ? 11 : 12,
                       fontWeight: 500,
                       letterSpacing: "0.26em",
                       textTransform: "uppercase",
                       color: "rgba(229,231,235,0.62)",
-                      marginBottom: 8
+                      marginBottom: isMobile ? 0 : 8
                     }}>{s.k}</div>
-                    <div style={{ fontSize: 17, color: "#E5E7EB", letterSpacing: "-0.01em" }}>{s.v}</div>
+                    <div style={{ fontSize: isMobile ? 14 : 17, color: "#E5E7EB", letterSpacing: "-0.01em" }}>{s.v}</div>
                   </div>
                   )}
               </motion.div>
@@ -829,4 +982,4 @@ const MainframeHero = () => {
 };
 
 // Expose for sections.jsx to use
-Object.assign(window, { MainframeHero, MFDLogo, DotPattern, ArrowRight, motion });
+Object.assign(window, { MainframeHero, MFDLogo, DotPattern, ArrowRight, motion, useViewport });

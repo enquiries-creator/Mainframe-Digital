@@ -39,17 +39,27 @@ const GridVignetteBackground = ({
 };
 
 /* ---------------- Section wrapper — content only, no per-section grid bg ---- */
-const SectionShell = ({ children, padding = "140px 80px 120px", style, maxWidth = 1400 }) => (
-  <section style={{ position: "relative", padding, ...style }}>
-    <div style={{ position: "relative", zIndex: 1, maxWidth, margin: "0 auto" }}>
-      {children}
-    </div>
-  </section>
-);
+const SectionShell = ({ children, padding, paddingMobile, paddingTablet, style, maxWidth = 1400 }) => {
+  const { isMobile, isTablet } = useViewport();
+  const resolvedPadding = isMobile
+    ? (paddingMobile ?? "72px 20px 64px")
+    : isTablet
+    ? (paddingTablet ?? "96px 36px 84px")
+    : (padding ?? "140px 80px 120px");
+  return (
+    <section style={{ position: "relative", padding: resolvedPadding, ...style }}>
+      <div style={{ position: "relative", zIndex: 1, maxWidth, margin: "0 auto" }}>
+        {children}
+      </div>
+    </section>
+  );
+};
 
 /* ---------------- Shared backdrop sitting behind sections 1-4 -------------- */
-const SectionsBackdrop = ({ children }) => (
-  <div style={{ position: "relative", background: "#0D1117", padding: "0 20px 20px" }}>
+const SectionsBackdrop = ({ children }) => {
+  const { isMobile } = useViewport();
+  return (
+  <div style={{ position: "relative", background: "#0D1117", padding: isMobile ? "0 12px 12px" : "0 20px 20px" }}>
 
     {/* Liquid glass frame wrapping all sections */}
     <div style={{
@@ -108,7 +118,8 @@ const SectionsBackdrop = ({ children }) => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 
 /* ---------------- Reusable bordered/dotted box with corner accents ---------------- */
@@ -526,16 +537,22 @@ const productItems = [
   }
 ];
 
-const ProductsSection = () => (
-  <SectionShell padding="160px 40px 140px" maxWidth={1700}>
+const ProductsSection = () => {
+  const { isMobile, isTablet } = useViewport();
+  return (
+  <SectionShell
+    padding="160px 40px 140px"
+    paddingTablet="100px 32px 96px"
+    paddingMobile="72px 18px 64px"
+    maxWidth={1700}>
     <div style={{ position: "relative", zIndex: 2 }}>
       <SectionLabel index="01" label="What we build" />
 
       <div style={{
         display: "flex",
         flexDirection: "column",
-        gap: 32,
-        marginBottom: 80,
+        gap: isMobile ? 20 : 32,
+        marginBottom: isMobile ? 48 : 80,
         maxWidth: 1100
       }}>
         <h2 style={{
@@ -562,20 +579,33 @@ const ProductsSection = () => (
         </p>
       </div>
 
-      <CardStack items={productItems} cardWidth={1100} cardHeight={680} overlap={0.6} spreadDeg={16} maxVisible={5} />
+      <CardStack
+        items={productItems}
+        cardWidth={isMobile ? 360 : isTablet ? 720 : 1100}
+        cardHeight={isMobile ? 460 : isTablet ? 480 : 680}
+        overlap={isMobile ? 0.78 : isTablet ? 0.7 : 0.6}
+        spreadDeg={isMobile ? 8 : isTablet ? 12 : 16}
+        maxVisible={isMobile ? 3 : 5}
+        intervalMs={isMobile ? 5200 : 3800} />
     </div>
   </SectionShell>
-);
+  );
+};
 
 /* ---------------- About section ---------------- */
-const AboutSection = () => (
-  <SectionShell padding="120px 60px">
+const AboutSection = () => {
+  const { isMobile, isTablet } = useViewport();
+  return (
+  <SectionShell
+    padding="120px 60px"
+    paddingTablet="84px 32px"
+    paddingMobile="56px 18px">
       <SectionLabel index="02" label="Who we are" />
 
       <div style={{
         display: "grid",
-        gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-        gap: 100,
+        gridTemplateColumns: isMobile ? "minmax(0, 1fr)" : "minmax(0, 1fr) minmax(0, 1fr)",
+        gap: isMobile ? 36 : isTablet ? 56 : 100,
         alignItems: "start"
       }}>
         <div>
@@ -592,18 +622,18 @@ const AboutSection = () => (
             A small studio that <span style={{ fontStyle: "normal", fontWeight: 600 }}>ships.</span>
           </h2>
           <p style={{
-            fontSize: 22,
+            fontSize: isMobile ? 17 : 22,
             lineHeight: 1.45,
             fontWeight: 300,
             color: "rgba(229,231,235,0.85)",
             margin: 0,
-            marginBottom: 24,
+            marginBottom: isMobile ? 18 : 24,
             textWrap: "pretty"
           }}>
             Mainframe Digital is an Auckland-based studio working with operators who are tired of paying agency rates for templated sites and disconnected tools.
           </p>
           <p style={{
-            fontSize: 17,
+            fontSize: isMobile ? 15 : 17,
             lineHeight: 1.65,
             fontWeight: 300,
             color: "rgba(229,231,235,0.65)",
@@ -614,7 +644,7 @@ const AboutSection = () => (
           </p>
         </div>
 
-        <BoxedSurface padding="44px 48px">
+        <BoxedSurface padding={isMobile ? "28px 22px" : "44px 48px"}>
           <div style={{
             fontSize: 13,
             fontWeight: 500,
@@ -633,25 +663,30 @@ const AboutSection = () => (
             ].map((row) => (
               <div key={row.k} style={{
                 display: "grid",
-                gridTemplateColumns: "44px 130px 1fr",
-                gap: 16,
+                gridTemplateColumns: isMobile ? "32px 1fr" : "44px 130px 1fr",
+                gridTemplateAreas: isMobile ? '"k t" ". v"' : undefined,
+                columnGap: isMobile ? 12 : 16,
+                rowGap: isMobile ? 6 : 0,
                 alignItems: "baseline",
-                paddingBottom: 18,
+                paddingBottom: isMobile ? 14 : 18,
                 borderBottom: "1px solid rgba(229,231,235,0.1)"
               }}>
                 <div style={{
+                  gridArea: isMobile ? "k" : undefined,
                   fontSize: 13,
                   fontWeight: 500,
                   letterSpacing: "0.16em",
                   color: "rgba(229,231,235,0.45)"
                 }}>{row.k}</div>
                 <div style={{
-                  fontSize: 18,
+                  gridArea: isMobile ? "t" : undefined,
+                  fontSize: isMobile ? 16 : 18,
                   fontWeight: 500,
                   color: "#E5E7EB",
                   letterSpacing: "-0.01em"
                 }}>{row.t}</div>
                 <div style={{
+                  gridArea: isMobile ? "v" : undefined,
                   fontSize: 14,
                   lineHeight: 1.5,
                   fontWeight: 300,
@@ -663,7 +698,8 @@ const AboutSection = () => (
         </BoxedSurface>
       </div>
   </SectionShell>
-);
+  );
+};
 
 /* ---------------- Services / capabilities grid ---------------- */
 const services = [
@@ -675,18 +711,23 @@ const services = [
   { k: "Strategy", v: "A 90-day plan tied to revenue, not vanity metrics." }
 ];
 
-const ServicesSection = () => (
-  <SectionShell padding="120px 60px">
+const ServicesSection = () => {
+  const { isMobile, isTablet } = useViewport();
+  return (
+  <SectionShell
+    padding="120px 60px"
+    paddingTablet="84px 32px"
+    paddingMobile="56px 18px">
       <SectionLabel index="03" label="Capabilities" />
 
       <h2 style={{
-        fontSize: "clamp(48px, 5.5vw, 80px)",
+        fontSize: "clamp(40px, 7vw, 80px)",
         fontWeight: 600,
         lineHeight: 0.95,
         letterSpacing: "-0.035em",
         color: "#E5E7EB",
         margin: 0,
-        marginBottom: 56,
+        marginBottom: isMobile ? 32 : 56,
         maxWidth: 900
       }}>
         Everything under one roof, <span style={{ fontStyle: "italic", fontWeight: 300, color: "rgba(229,231,235,0.55)" }}>billed once.</span>
@@ -694,7 +735,7 @@ const ServicesSection = () => (
 
       <div style={{
         display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)",
+        gridTemplateColumns: isMobile ? "minmax(0, 1fr)" : isTablet ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
         gap: 0,
         border: "1px solid rgba(229,231,235,0.18)",
         background: "linear-gradient(135deg, rgba(28,33,43,0.85) 0%, rgba(13,17,23,0.92) 100%)",
@@ -719,20 +760,26 @@ const ServicesSection = () => (
           }} />
         ))}
 
-        {services.map((s, i) => {
-          const col = i % 3;
-          const row = Math.floor(i / 3);
-          return (
+        {(() => {
+          const cols = isMobile ? 1 : isTablet ? 2 : 3;
+          const total = services.length;
+          const lastRow = Math.ceil(total / cols) - 1;
+          return services.map((s, i) => {
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const isLastCol = col === cols - 1;
+            const isLastRow = row === lastRow;
+            return (
             <div key={s.k} style={{
               position: "relative",
-              padding: "44px 40px 48px",
-              borderRight: col < 2 ? "1px solid rgba(229,231,235,0.1)" : "none",
-              borderBottom: row === 0 ? "1px solid rgba(229,231,235,0.1)" : "none",
-              minHeight: 220,
+              padding: isMobile ? "28px 24px 32px" : isTablet ? "36px 32px 40px" : "44px 40px 48px",
+              borderRight: !isLastCol ? "1px solid rgba(229,231,235,0.1)" : "none",
+              borderBottom: !isLastRow ? "1px solid rgba(229,231,235,0.1)" : "none",
+              minHeight: isMobile ? 0 : 220,
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
-              gap: 24
+              gap: isMobile ? 14 : 24
             }}>
               <div style={{
                 fontSize: 14,
@@ -745,14 +792,14 @@ const ServicesSection = () => (
               </div>
               <div>
                 <div style={{
-                  fontSize: 30,
+                  fontSize: isMobile ? 24 : 30,
                   fontWeight: 500,
                   color: "#E5E7EB",
                   letterSpacing: "-0.02em",
-                  marginBottom: 12
+                  marginBottom: isMobile ? 8 : 12
                 }}>{s.k}</div>
                 <div style={{
-                  fontSize: 15,
+                  fontSize: isMobile ? 14 : 15,
                   lineHeight: 1.55,
                   fontWeight: 300,
                   color: "rgba(229,231,235,0.7)",
@@ -760,25 +807,33 @@ const ServicesSection = () => (
                 }}>{s.v}</div>
               </div>
             </div>
-          );
-        })}
+            );
+          });
+        })()}
       </div>
   </SectionShell>
-);
+  );
+};
 
 /* ---------------- Final CTA section ---------------- */
 const FinalCTASection = () => {
   const [hovered, setHovered] = sUseState(false);
+  const { isMobile, isTablet } = useViewport();
 
   return (
-    <SectionShell padding="140px 60px 120px">
+    <SectionShell
+      padding="140px 60px 120px"
+      paddingTablet="96px 32px 88px"
+      paddingMobile="56px 18px 56px">
         <SectionLabel index="04" label="Let's get to it" />
 
-        <BoxedSurface padding="80px 80px 88px" style={{
-          background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.05) 100%)",
-          backdropFilter: "blur(14px) saturate(160%)",
-          WebkitBackdropFilter: "blur(14px) saturate(160%)"
-        }}>
+        <BoxedSurface
+          padding={isMobile ? "36px 24px 40px" : isTablet ? "56px 48px 64px" : "80px 80px 88px"}
+          style={{
+            background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.05) 100%)",
+            backdropFilter: "blur(14px) saturate(160%)",
+            WebkitBackdropFilter: "blur(14px) saturate(160%)"
+          }}>
           {/* glass sheen */}
           <div style={{
             position: "absolute",
@@ -791,13 +846,13 @@ const FinalCTASection = () => {
 
           <div style={{
             display: "grid",
-            gridTemplateColumns: "minmax(0, 1.3fr) minmax(0, 1fr)",
-            gap: 80,
+            gridTemplateColumns: isMobile ? "minmax(0, 1fr)" : "minmax(0, 1.3fr) minmax(0, 1fr)",
+            gap: isMobile ? 36 : isTablet ? 48 : 80,
             alignItems: "center"
           }}>
             <div>
               <h2 style={{
-                fontSize: "clamp(56px, 7.5vw, 120px)",
+                fontSize: "clamp(40px, 8vw, 120px)",
                 fontWeight: 600,
                 lineHeight: 0.92,
                 letterSpacing: "-0.045em",
@@ -807,12 +862,12 @@ const FinalCTASection = () => {
                 Still paying <span style={{ fontStyle: "italic", fontWeight: 300, color: "rgba(229,231,235,0.55)" }}>$5k a month</span> for a site that doesn't&nbsp;sell?
               </h2>
               <p style={{
-                fontSize: 22,
+                fontSize: isMobile ? 16 : 22,
                 lineHeight: 1.45,
                 fontWeight: 300,
                 color: "rgba(229,231,235,0.78)",
                 margin: 0,
-                marginTop: 32,
+                marginTop: isMobile ? 20 : 32,
                 maxWidth: 640,
                 textWrap: "pretty"
               }}>
@@ -842,12 +897,12 @@ const FinalCTASection = () => {
                     ? "inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.1), 0 14px 40px rgba(0,0,0,0.4)"
                     : "inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(255,255,255,0.08), 0 8px 28px rgba(0,0,0,0.3)",
                   color: "#E5E7EB",
-                  paddingLeft: 44,
-                  paddingRight: 12,
-                  paddingTop: 12,
-                  paddingBottom: 12,
+                  paddingLeft: isMobile ? 28 : 44,
+                  paddingRight: isMobile ? 8 : 12,
+                  paddingTop: isMobile ? 8 : 12,
+                  paddingBottom: isMobile ? 8 : 12,
                   borderRadius: 999,
-                  fontSize: 24,
+                  fontSize: isMobile ? 17 : 24,
                   fontWeight: 500,
                   letterSpacing: "-0.015em",
                   transition: "all 0.3s ease",
@@ -871,7 +926,7 @@ const FinalCTASection = () => {
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 70, height: 70,
+                  width: isMobile ? 46 : 70, height: isMobile ? 46 : 70,
                   borderRadius: "50%",
                   background: "linear-gradient(135deg, rgba(13,17,23,0.95) 0%, rgba(28,33,43,0.95) 100%)",
                   border: "1px solid rgba(255,255,255,0.18)",
@@ -879,7 +934,7 @@ const FinalCTASection = () => {
                   transition: "transform 0.3s ease",
                   transform: hovered ? "scale(1.06) rotate(-12deg)" : "scale(1)"
                 }}>
-                  <ArrowRight size={26} color="#E5E7EB" />
+                  <ArrowRight size={isMobile ? 20 : 26} color="#E5E7EB" />
                 </span>
               </button>
 
@@ -903,14 +958,23 @@ const FinalCTASection = () => {
 };
 
 /* ---------------- Footer ---------------- */
-const Footer = () => (
-  <footer style={{ padding: "80px 80px 56px", borderTop: "1px solid rgba(229,231,235,0.1)" }}>
+const Footer = () => {
+  const { isMobile, isTablet } = useViewport();
+  return (
+  <footer style={{
+    padding: isMobile ? "48px 20px 32px" : isTablet ? "60px 36px 44px" : "80px 80px 56px",
+    borderTop: "1px solid rgba(229,231,235,0.1)"
+  }}>
     <div style={{ maxWidth: 1280, margin: "0 auto" }}>
       <div style={{
         display: "grid",
-        gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)",
-        gap: 60,
-        marginBottom: 64
+        gridTemplateColumns: isMobile
+          ? "minmax(0, 1fr)"
+          : isTablet
+          ? "minmax(0, 1fr) minmax(0, 1fr)"
+          : "minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)",
+        gap: isMobile ? 36 : isTablet ? 40 : 60,
+        marginBottom: isMobile ? 40 : 64
       }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
@@ -974,12 +1038,14 @@ const Footer = () => (
       </div>
 
       <div style={{
-        paddingTop: 28,
+        paddingTop: isMobile ? 20 : 28,
         borderTop: "1px solid rgba(229,231,235,0.08)",
         display: "flex",
+        flexDirection: isMobile ? "column" : "row",
         justifyContent: "space-between",
-        alignItems: "center",
-        fontSize: 12,
+        alignItems: isMobile ? "flex-start" : "center",
+        gap: isMobile ? 10 : 0,
+        fontSize: isMobile ? 11 : 12,
         fontWeight: 400,
         letterSpacing: "0.16em",
         textTransform: "uppercase",
@@ -990,7 +1056,8 @@ const Footer = () => (
       </div>
     </div>
   </footer>
-);
+  );
+};
 
 /* ---------------- Page assembly ---------------- */
 const MainframePage = () => (
