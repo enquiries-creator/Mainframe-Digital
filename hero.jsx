@@ -379,9 +379,11 @@ const MainframeHero = () => {
             height: "100%",
             objectFit: "cover",
             objectPosition: "center"
-          }}
-          src="assets/hero-bg.mp4" />
-        
+          }}>
+          <source src="assets/hero-bg.webm" type="video/webm" />
+          <source src="assets/hero-bg.mp4" type="video/mp4" />
+        </video>
+
 
         {/* Noise overlay */}
         <div className="noise-overlay" style={{
