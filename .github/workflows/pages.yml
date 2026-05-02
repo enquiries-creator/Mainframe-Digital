@@ -3,6 +3,7 @@ name: Deploy preview to GitHub Pages
 on:
   push:
     branches:
+      - claude/setup-stitch-skills-xSaRj
       - claude/implement-mainframe-hero-ZKeBt
       - main
   workflow_dispatch:
